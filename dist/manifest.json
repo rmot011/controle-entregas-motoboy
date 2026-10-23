@@ -1,0 +1,15 @@
+{
+  "name": "Controle de Entregas - Motoboy",
+  "short_name": "Entregas",
+  "description": "Controle de Entregas - Motoboy",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#ffffff",
+  "lang": "pt-BR",
+  "icons": [{
+    "src": "./favicon.ico",
+    "sizes": "32x32",
+    "type": "image/x-icon"
+  }]
+}
