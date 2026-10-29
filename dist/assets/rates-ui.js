@@ -17,7 +17,7 @@
     #rates-manager-overlay.open{display:flex}
     .rates-manager-card{width:min(680px,100%);max-height:min(760px,92vh);overflow:auto;border-radius:14px;background:#fff;box-shadow:0 22px 70px rgba(15,23,42,.28);padding:20px}
     .rates-manager-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:16px}
-    .rates-manager-head h2{margin:0;color:#17243b;font-size:20px}.rates-manager-head p{margin:5px 0 0;color:#64748b;font-size:12px}
+    .rates-manager-head h2{margin:0;color:#17243b;font-size:20px}.rates-manager-head p{margin:5px 0 0;color:#64748b;font-size:12px}.rates-manager-count{display:inline-block;margin-left:6px;padding:3px 7px;border-radius:999px;background:#e8f1f8;color:#335d84;font-size:11px;font-weight:700}
     .rates-manager-close{border:0;border-radius:50%;width:30px;height:30px;background:#f1f5f9;color:#475569;cursor:pointer;font-size:18px}
     .rates-manager-table{width:100%;border-collapse:collapse;font-size:12px}.rates-manager-table th{padding:9px 7px;text-align:left;color:#64748b;background:#f8fafc;font-size:11px}.rates-manager-table td{padding:8px 7px;border-bottom:1px solid #edf1f5;vertical-align:middle}.rates-manager-table input{width:100%;border:1px solid #d8e1ea;border-radius:6px;padding:8px;color:#17243b;background:#fff;font-size:12px;box-sizing:border-box}.rates-manager-table .rate-input{max-width:120px}.rates-manager-delete{border:0;background:transparent;color:#dc2626;cursor:pointer;font-size:11px}.rates-manager-add{margin-top:12px;border:1px dashed #b9c9da;border-radius:7px;padding:9px 12px;background:#f8fbfd;color:#335d84;cursor:pointer;font-size:12px}.rates-manager-backup{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px;padding-top:14px;border-top:1px solid #edf1f5}.rates-manager-backup button{border:1px solid #cbd5e1;border-radius:7px;padding:9px 11px;background:#f8fafc;color:#335d84;cursor:pointer;font-size:11px;font-weight:700}.rates-manager-backup p{width:100%;margin:0;color:#64748b;font-size:11px;line-height:1.4}.rates-manager-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:18px}.rates-manager-actions button{border:0;border-radius:7px;padding:10px 16px;cursor:pointer;font-size:12px;font-weight:700}.rates-manager-cancel{background:#f1f5f9;color:#475569}.rates-manager-save{background:#171717;color:#fff}.rates-manager-empty{padding:24px 8px;text-align:center;color:#64748b;font-size:12px}.rates-manager-toast{position:fixed;z-index:100000;right:18px;bottom:18px;border-radius:8px;padding:11px 14px;color:#fff;background:#17243b;font-size:12px;box-shadow:0 8px 25px rgba(15,23,42,.2)}
   `;
@@ -46,16 +46,22 @@
     const allRates = read(RATE_KEY, {});
     const prefix = `${client.id}::`;
     const rows = Object.entries(allRates).filter(([key]) => key.startsWith(prefix)).map(([key, value]) => ({ bairro: key.slice(prefix.length), valor: value }));
-    overlay.innerHTML = `<div class="rates-manager-card" role="dialog" aria-modal="true"><div class="rates-manager-head"><div><h2>Taxas por bairro</h2><p>Estabelecimento: <strong>${client.nome}</strong></p></div><button class="rates-manager-close" aria-label="Fechar">×</button></div><div class="rates-manager-body"></div><button class="rates-manager-add">+ Adicionar bairro</button><div class="rates-manager-backup"><p>Compartilhe esta tabela com outros motoboys ou importe um backup recebido.</p><button type="button" class="rates-manager-export">⬇ Exportar / compartilhar</button><button type="button" class="rates-manager-import">⬆ Importar tabela</button><input class="rates-manager-file" type="file" accept="application/json,.json" hidden></div><div class="rates-manager-actions"><button class="rates-manager-cancel">Cancelar</button><button class="rates-manager-save">Salvar tabela</button></div></div>`;
+    overlay.innerHTML = `<div class="rates-manager-card" role="dialog" aria-modal="true"><div class="rates-manager-head"><div><h2>Taxas por bairro <span class="rates-manager-count">${rows.length} ${rows.length === 1 ? 'bairro' : 'bairros'}</span></h2><p>Estabelecimento: <strong>${client.nome}</strong></p></div><button class="rates-manager-close" aria-label="Fechar">×</button></div><div class="rates-manager-body"></div><button class="rates-manager-add">+ Adicionar bairro</button><div class="rates-manager-backup"><p>Compartilhe esta tabela com outros motoboys ou importe um backup recebido.</p><button type="button" class="rates-manager-export">⬇ Exportar / compartilhar</button><button type="button" class="rates-manager-import">⬆ Importar tabela</button><input class="rates-manager-file" type="file" accept="application/json,.json" hidden></div><div class="rates-manager-actions"><button class="rates-manager-cancel">Cancelar</button><button class="rates-manager-save">Salvar tabela</button></div></div>`;
     overlay.classList.add('open');
     const body = overlay.querySelector('.rates-manager-body');
+    // Mantém o total de bairros visível e sincronizado com as linhas da tabela.
+    const atualizarContador = () => {
+      const total = body.querySelectorAll('tr[data-rate-row]').length;
+      const contador = overlay.querySelector('.rates-manager-count');
+      if (contador) contador.textContent = `${total} ${total === 1 ? 'bairro' : 'bairros'}`;
+    };
     const render = () => {
       const current = [...body.querySelectorAll('tr[data-rate-row]')];
-      if (!current.length) { body.innerHTML = '<div class="rates-manager-empty">Nenhuma taxa cadastrada para este estabelecimento.</div>'; return; }
+      if (!current.length) { body.innerHTML = '<div class="rates-manager-empty">Nenhuma taxa cadastrada para este estabelecimento.</div>'; atualizarContador(); return; }
       const table = document.createElement('table'); table.className = 'rates-manager-table';
       table.innerHTML = '<thead><tr><th>Bairro</th><th>Taxa (R$)</th><th></th></tr></thead><tbody></tbody>';
       current.forEach((row) => table.querySelector('tbody').appendChild(row));
-      body.innerHTML = ''; body.appendChild(table);
+      body.innerHTML = ''; body.appendChild(table); atualizarContador();
     };
     const addRow = (bairro = '', valor = '') => {
       if (body.querySelector('.rates-manager-empty')) body.innerHTML = '';
@@ -63,8 +69,9 @@
       if (!tbody) { body.innerHTML = '<table class="rates-manager-table"><thead><tr><th>Bairro</th><th>Taxa (R$)</th><th></th></tr></thead><tbody></tbody></table>'; tbody = body.querySelector('tbody'); }
       const tr = document.createElement('tr'); tr.dataset.rateRow = '1';
       tr.innerHTML = `<td><input class="rate-neighborhood" value="${bairro.replaceAll('"', '&quot;')}" placeholder="Ex.: Vila Nova"></td><td><input class="rate-input" inputmode="decimal" value="${valor}" placeholder="0,00"></td><td><button class="rates-manager-delete" type="button">Excluir</button></td>`;
-      tr.querySelector('.rates-manager-delete').onclick = () => { tr.remove(); if (!tbody.children.length) render(); };
+      tr.querySelector('.rates-manager-delete').onclick = () => { tr.remove(); if (!tbody.children.length) render(); else atualizarContador(); };
       tbody.appendChild(tr);
+      atualizarContador();
     };
     rows.forEach((row) => addRow(row.bairro, String(row.valor).replace('.', ',')));
     if (!rows.length) render();
