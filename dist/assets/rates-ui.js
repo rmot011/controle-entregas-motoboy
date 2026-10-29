@@ -372,11 +372,21 @@
     if (text === 'adicionar' || text === 'salvar') applyRateToCurrentDelivery();
   }, true);
 
+  // O React monta o modal logo depois do toque. Tenta instalar a tabela em
+  // seguida para evitar que os campos antigos apareçam durante a espera do
+  // intervalo periódico, principalmente no Safari e no Samsung Internet.
+  document.addEventListener('click', (event) => {
+    const button = event.target.closest('button');
+    const text = button?.textContent.trim().toLowerCase() || '';
+    if (!text.includes('nova entrega')) return;
+    [0, 30, 80, 160].forEach((delay) => setTimeout(instalarTabelaTaxasEntrega, delay));
+  }, true);
+
   // Não observar o body: a própria lista cria nós e isso causava um loop infinito no Samsung.
   // Uma varredura leve detecta apenas quando o modal Nova Entrega é aberto.
   setInterval(() => {
     installLauncher();
     instalarTabelaTaxasEntrega();
-  }, 900);
+  }, 150);
   installLauncher();
 })();
