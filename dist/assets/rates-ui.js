@@ -240,7 +240,7 @@
     tabela.innerHTML = '';
 
     const titulo = document.createElement('div');
-    titulo.textContent = 'Escolha uma entrega pronta para adicionar';
+    titulo.textContent = `Escolha uma entrega pronta para adicionar — ${taxas.length} ${taxas.length === 1 ? 'bairro cadastrado' : 'bairros cadastrados'}`;
     titulo.style.cssText = 'padding:2px 4px 8px;color:#334155;font-size:12px;font-weight:700;';
     tabela.appendChild(titulo);
     // Pesquisa rápida para localizar um bairro sem precisar rolar toda a lista.
