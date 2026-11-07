@@ -25,9 +25,10 @@
 
   const getActiveClient = () => {
     const selector = document.querySelector('[role="combobox"]');
-    const name = selector ? selector.textContent.trim() : '';
+    const name = normalize(selector ? selector.textContent : '');
     const clients = read(CLIENT_KEY, []);
-    return clients.find((client) => client.nome === name) || clients[0] || null;
+    if (!name) return null;
+    return clients.find((client) => normalize(client.nome) === name) || null;
   };
 
   const overlay = document.createElement('div');
@@ -360,7 +361,7 @@
   const installLauncher = () => {
     if (!document.querySelector('[role="combobox"]') || document.getElementById('rates-manager-launcher')) return;
     const button = document.createElement('button');
-    button.id = 'rates-manager-launcher'; button.type = 'button'; button.textContent = '⚙ Consultar e editar taxas por bairro'; button.onclick = openTable;
+    button.id = 'rates-manager-launcher'; button.type = 'button'; button.textContent = '⚙ Consultar e editar taxas por bairro'; button.onclick = () => setTimeout(openTable, 0);
     const anchor = document.querySelector('[role="combobox"]')?.closest('div');
     const root = document.getElementById('root');
     (anchor?.parentElement || root)?.appendChild(button);
