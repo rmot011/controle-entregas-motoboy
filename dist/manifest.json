@@ -4,12 +4,11 @@
   "description": "Controle de Entregas - Motoboy",
   "start_url": "./",
   "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#ffffff",
+  "background_color": "#17243b",
+  "theme_color": "#17243b",
   "lang": "pt-BR",
-  "icons": [{
-    "src": "./favicon.ico",
-    "sizes": "32x32",
-    "type": "image/x-icon"
-  }]
+  "icons": [
+    {"src":"./logo-rmot011-192.png","sizes":"192x192","type":"image/png"},
+    {"src":"./logo-rmot011-512.png","sizes":"512x512","type":"image/png"}
+  ]
 }
